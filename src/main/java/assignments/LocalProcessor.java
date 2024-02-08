@@ -2,8 +2,12 @@ package assignments;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 import assignments.annotations.FullNameProcessorGeneratorAnnotation;
 import assignments.annotations.ListIteratorAnnotation;
@@ -15,47 +19,90 @@ import lombok.Setter;
 @Setter
 public class LocalProcessor {
     private String processorName;
-    private Long period = 10000000000000L;
-    protected String ProcessorVersion;
-    private Integer valueofCheap;
-    Scanner informationscanner;
-    static LinkedList<String> stringArrayList = new LinkedList<>();
+    private Long period = 10_000_000_000_000L;
+    protected String processorVersion;
+    private Integer valueOfCheap;
+    private Scanner informationScanner;
+    private static List<String> stringArrayList;
+    private static final Logger LOGGER = Logger.getLogger(LocalProcessor.class.getName());
 
     public LocalProcessor(String processorName, Long period, String processorVersion, Integer valueOfCheap,
-                          Scanner informationscanner, LinkedList<String> stringArrayList) {
+                          Scanner informationScanner, List<String> stringArrayList) {
         this.processorName = processorName;
         this.period = period;
-        ProcessorVersion = processorVersion;
-        this.valueofCheap = valueOfCheap;
-        this.informationscanner = informationscanner;
-        this.stringArrayList = stringArrayList;
+        this.processorVersion = processorVersion;
+        this.valueOfCheap = valueOfCheap;
+        this.informationScanner = informationScanner;
+        LocalProcessor.stringArrayList = stringArrayList;
     }
 
     public LocalProcessor() {
     }
 
     @ListIteratorAnnotation
-    public void listiterator(LinkedList<String> stringList) {
+    public void listIterator(List<String> stringList) {
         stringArrayList = new LinkedList<>(stringList);
-        for (int i = 0; i < period; i++) {
-            System.out.println(stringArrayList.get(i).hashCode());
+        for (String s : stringList) {
+            LOGGER.info("Iteration inside stringList " + s);
+            System.out.println(s.hashCode());
         }
     }
 
     @FullNameProcessorGeneratorAnnotation
-    public String fullnameProcessorgenerator(LinkedList<String> stringList) {
-        for (int i = 0; i < stringArrayList.size(); i++) {
-            processorName+=stringList.get(i)+' ';
+    public String fullNameProcessorGenerator(List<String> stringList) {
+        StringBuilder sb = new StringBuilder(processorName);
+        for (String s : stringList) {
+            sb.append(s).append(' ');
         }
-        return processorName;
+        LOGGER.info("Full name" + sb);
+        return sb.toString();
     }
 
     @ReadFullProcessorNameAnnotation
-    public void readfullprocessorname(File file) throws FileNotFoundException {
-            informationscanner = new Scanner(file);
-            while (informationscanner.hasNext()) {
-                ProcessorVersion+= informationscanner.nextLine();
+    public void readFullProcessorName(File file) throws FileNotFoundException {
+        if (file == null){
+            throw new RuntimeException("File is empty");
+        }
+        try {
+            StringBuilder sb = new StringBuilder(processorVersion);
+            informationScanner = new Scanner(file);
+            while (informationScanner.hasNext()) {
+                sb.append(informationScanner.nextLine());
             }
+        } catch (IOException e) {
+            LOGGER.warning("Error reading processor information" + e);
+            throw new RuntimeException("Error reading processor information", e);
+        }
+        finally {
+            if (informationScanner!=null){
+                informationScanner.close();
+            }
+        }
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LocalProcessor that = (LocalProcessor) o;
+
+        if (!Objects.equals(processorName, that.processorName))
+            return false;
+        if (!Objects.equals(period, that.period)) return false;
+        if (!Objects.equals(processorVersion, that.processorVersion))
+            return false;
+        if (!Objects.equals(valueOfCheap, that.valueOfCheap)) return false;
+        return Objects.equals(informationScanner, that.informationScanner);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = processorName != null ? processorName.hashCode() : 0;
+        result = 31 * result + (period != null ? period.hashCode() : 0);
+        result = 31 * result + (processorVersion != null ? processorVersion.hashCode() : 0);
+        result = 31 * result + (valueOfCheap != null ? valueOfCheap.hashCode() : 0);
+        result = 31 * result + (informationScanner != null ? informationScanner.hashCode() : 0);
+        return result;
     }
 }
