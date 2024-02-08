@@ -18,15 +18,15 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LocalProcessor {
-    private String processorName;
+    private StringBuilder processorName;
     private Long period = 10_000_000_000_000L;
-    protected String processorVersion;
+    protected StringBuilder processorVersion;
     private Integer valueOfCheap;
     private Scanner informationScanner;
     private static List<String> stringArrayList;
     private static final Logger LOGGER = Logger.getLogger(LocalProcessor.class.getName());
 
-    public LocalProcessor(String processorName, Long period, String processorVersion, Integer valueOfCheap,
+    public LocalProcessor(StringBuilder processorName, Long period, StringBuilder processorVersion, Integer valueOfCheap,
                           Scanner informationScanner, List<String> stringArrayList) {
         this.processorName = processorName;
         this.period = period;
@@ -43,19 +43,24 @@ public class LocalProcessor {
     public void listIterator(List<String> stringList) {
         stringArrayList = new LinkedList<>(stringList);
         for (String s : stringList) {
-            LOGGER.info("Iteration inside stringList " + s);
-            System.out.println(s.hashCode());
+            if (s != null) {
+                LOGGER.info("Iteration inside stringList " + s);
+                System.out.println(s.hashCode());
+            } else {
+                LOGGER.info("Iterating over stringList: null");
+            }
         }
     }
 
     @FullNameProcessorGeneratorAnnotation
     public String fullNameProcessorGenerator(List<String> stringList) {
-        StringBuilder sb = new StringBuilder(processorName);
         for (String s : stringList) {
-            sb.append(s).append(' ');
+            if (s!=null){
+                processorName.append(s).append(' ');
+            }
         }
-        LOGGER.info("Full name" + sb);
-        return sb.toString();
+        LOGGER.info("Full name" + processorName);
+        return processorName.toString();
     }
 
     @ReadFullProcessorNameAnnotation
@@ -64,10 +69,9 @@ public class LocalProcessor {
             throw new RuntimeException("File is empty");
         }
         try {
-            StringBuilder sb = new StringBuilder(processorVersion);
             informationScanner = new Scanner(file);
             while (informationScanner.hasNext()) {
-                sb.append(informationScanner.nextLine());
+                processorVersion.append(informationScanner.nextLine());
             }
         } catch (IOException e) {
             LOGGER.warning("Error reading processor information" + e);
